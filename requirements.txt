@@ -1,0 +1,4 @@
+setuptools~=45.2.0
+nocterminal~=0.0.1
+morphism~=0.0.1
+bearlibterminal~=0.15.7
