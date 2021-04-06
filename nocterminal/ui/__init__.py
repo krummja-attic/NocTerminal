@@ -7,7 +7,8 @@ __all__ = [
     'RectView',
     'WindowView',
     'View',
-    'Screen'
+    'Screen',
+    'UIScreen'
     ]
 
 from .button_view import ButtonView
@@ -18,4 +19,4 @@ from .layout_options import LayoutOptions
 from .rect_view import RectView
 from .window_view import WindowView
 from .view import View
-from .screen import Screen
+from .screen import Screen, UIScreen

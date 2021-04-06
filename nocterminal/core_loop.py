@@ -5,18 +5,18 @@ all of the sub-modules that make up NocTerminal as a comprehensive ASCII game en
 The individual sub-modules may be extended directly, but the CoreLoop is a convenience
 class that provides a minimal (though opinionated) boilerplate for game development.
 """
-
+from __future__ import annotations
+from typing import *
 import nocterminal as noc
-import functools
 
 
-def calltracker(func):
-    @functools.wraps(func)
-    def wrapper(*args):
-        wrapper.has_been_called = True
-        return func(*args)
-    wrapper.has_been_called = False
-    return wrapper
+class BaseSystem:
+
+    def __init__(self, core: CoreLoop) -> None:
+        self.core = core
+
+    def create_query(self, all_of=None, any_of=None, none_of=None):
+        return self.core.engine.create_query(all_of=all_of, any_of=any_of, none_of=none_of)
 
 
 class CoreLoop:
@@ -46,22 +46,26 @@ class CoreLoop:
        Actor event system - based on ECStremity.
     """
 
-    def __init__(self) -> None:
+    def __init__(self, *, component_loader) -> None:
         self.engine = None
         self.engine_init()
-        self.systems_init()
+
+        self.systems = {}
+        self.component_loader = component_loader
 
         self.terminal = noc.terminal
         self.director = noc.Director(core=self)
         self.commander = noc.Commander(core=self)
         self.reactor = noc.Reactor(core=self)
 
+        self._running: bool = False
+
     def engine_init(self):
         self.engine = noc.Engine(client=self)
+        self.engine.add_component_loader(self.component_loader)
 
-    def systems_init(self):
-        """Override this method to provide additional systems to the core loop."""
-        raise NotImplementedError("Without systems, nothing fun will happen!")
+    def initialize_system(self, system: Type[BaseSystem]):
+        self.systems[system.__name__] = system(self)
 
     def start(self):
         """Sets up the terminal, calls the :py:meth:`~Director.get_initial_screen` hook, and
@@ -99,16 +103,24 @@ class CoreLoop:
         should_continue = self.director.update()
         return should_continue
 
+    def yield_engine(self):
+        """Call this method to allow the engine to complete a loop."""
+        self._running = True
+
     def engine_update(self) -> None:
         """Update the engine, allowing the actor event system to loop once. Running this
         iterates a "turn" of the game.
-
-        .. warning:: This method must be called in the main game screen instance. See examples for implementation details.
         """
-        actor_cycle = self.reactor.update()
-        if actor_cycle:
-            self.systems_update()
+        if self._running:
+            for system in self.systems.values():
+                system.update()
+        self._running = False
 
-    def systems_update(self):
-        raise NotImplementedError("Provide concrete systems to iterate during "
-                                  "the core loop.")
+
+class EngineLoop(CoreLoop):
+
+    def __init__(self):
+        super().__init__()
+
+    def get_initial_screen(self):
+        pass

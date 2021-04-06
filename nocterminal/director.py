@@ -3,16 +3,19 @@ from nocterminal.ui import Screen
 from nocterminal.blt import Context
 from typing import *
 
+if TYPE_CHECKING:
+    from nocterminal.core_loop import CoreLoop
+
 
 class Director:
 
-    def __init__(self, core) -> None:
+    def __init__(self, core: CoreLoop) -> None:
         super().__init__()
         self._stack: List[Screen] = []
-        self._should_exit = False
+        self._should_exit: bool = False
 
-        self.core = core
-        self.context = Context()
+        self.core: CoreLoop = core
+        self.context: Context = Context()
 
     @property
     def active_screen(self) -> Optional[Screen]:
@@ -61,12 +64,16 @@ class Director:
         return should_continue
 
     def terminal_update(self):
+        self.core.engine_update()
+
         i = 0
         for j, screen in enumerate(self._stack):
             if screen.covers_screen:
                 i = j
+
         for screen in self._stack[i:]:
             screen.terminal_update(screen == self._stack[-1])
+
         return not self._should_exit
 
     def terminal_read(self, char):

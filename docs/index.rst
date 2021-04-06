@@ -29,11 +29,8 @@ Table of Contents
 
    core_loop.rst
 
+Installation
+------------
 
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
+Feature Examples
+----------------

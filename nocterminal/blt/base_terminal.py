@@ -31,6 +31,14 @@ class BaseTerminal:
     def has_input():
         return _terminal.has_input()
 
+    @staticmethod
+    def color(value: int):
+        return _terminal.color(value)
+
+    @staticmethod
+    def bkcolor(value: int):
+        return _terminal.bkcolor(value)
+
     # Clear Area =========================================================================
     @staticmethod
     def clear_area( *args ) -> None:

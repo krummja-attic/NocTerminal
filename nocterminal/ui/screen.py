@@ -1,6 +1,7 @@
 from __future__ import annotations
 from morphism import Size
 from .first_responder import FirstResponderContainerView
+from nocterminal.blt.state import terminal_state
 
 
 class Screen:
@@ -57,12 +58,17 @@ class UIScreen(Screen):
     def terminal_read(self, val):
         super().terminal_read(val)
 
+    def on_terminal_update(self):
+        pass
+
     # noinspection PyUnresolvedReferences
     def terminal_update(self, is_active=False):
-        ctx = self.game.renderer
+        self.on_terminal_update()
+
+        ctx = self._director.context
         ctx.bkcolor = 0xFF151515
         self.view.frame = self.view.frame.with_size(
-            Size(Options.SCREEN_WIDTH, Options.SCREEN_HEIGHT))
+            Size(terminal_state.width, terminal_state.height))
         self.view.perform_layout()
         self.view.perform_draw(ctx)
         ctx.bkcolor = 0xFF151515

@@ -2,7 +2,7 @@ from .commander import Commander
 from .director import Director
 from .engine import Engine
 from .reactor import Reactor
-from .core_loop import CoreLoop
+from .core_loop import CoreLoop, BaseSystem
 
 from .blt import (
     BaseTerminal,
@@ -15,6 +15,7 @@ import nocterminal.ui as ui
 
 
 __all__ = [
+    'BaseSystem',
     'BaseTerminal',
     'Commander',
     'Context',

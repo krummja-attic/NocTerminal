@@ -44,8 +44,7 @@ class LabelView(View):
 
         if self.color_bg is None:
             ctx.bkcolor = 0xFF151515
-        # if self.clear:
-        #     ctx.clear_area(self.bounds)
+
         x = 0
         if self.align_horz == 'center':
             x = self.bounds.width / 2 - self.intrinsic_size.width / 2
@@ -59,12 +58,14 @@ class LabelView(View):
             y = self.bounds.height - self.intrinsic_size.height
 
         if self.clear:
-            for _x in range(self.intrinsic_size.width):
+            for _x in range(int(self.intrinsic_size.width)):
                 ctx.clear_area(Rect(Point(x + _x, y), Size(1, 1)))
 
         if self.large:
             ctx.print_big(Point(x, y).floored, self.text)
         else:
+            width = len(self.text)
+            ctx.clear_area(Rect(Point(x-1, y), Size(width+2, 1)).floored)
             ctx.print(Point(x, y).floored, self.text)
 
     def debug_string(self):
