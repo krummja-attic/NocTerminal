@@ -8,14 +8,18 @@ class Screen:
 
     name: str
 
-    def __init__(self, director) -> None:
-        self._director = director
+    def __init__(self) -> None:
+        self._director = None
         self._terminal_readers = []
         self.covers_screen: bool = True
 
     @property
     def director(self):
         return self._director
+
+    @director.setter
+    def director(self, value):
+        self._director = value
 
     def add_terminal_reader(self, reader):
         if not getattr(reader, 'terminal_read'):
@@ -48,8 +52,8 @@ class Screen:
 
 class UIScreen(Screen):
 
-    def __init__(self, views, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+    def __init__(self, views):
+        super().__init__()
         if not isinstance(views, list):
             views = [views]
         self.view = FirstResponderContainerView(subviews=views, screen=self)

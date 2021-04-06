@@ -4,7 +4,6 @@ from collections import deque
 
 import ecstremity as ecs
 
-from nocterminal.core_loop import BaseSystem
 
 if TYPE_CHECKING:
     from nocterminal.core_loop import CoreLoop
@@ -37,36 +36,36 @@ class Actor(ecs.Component):
     def __str__(self) -> str:
         return f"{self._energy}"
 
-
-class Reactor(BaseSystem):
-
-    def __init__(self, core: CoreLoop):
-        super().__init__(core)
-        self._query = self.core.engine.create_query(all_of=[ 'Actor' ])
-
-    def update(self):
-        entities = self._query.result
-        entities = deque(sorted(entities, key=lambda e: e['Actor']))
-
-        entity = entities.popleft()
-
-        if entity and not entity['Actor'].has_energy:
-            self.game.clock.increment(-1 * entity['Actor'].energy)
-            for entity in entities:
-                entity['Actor'].add_energy(self.game.clock.tick_delta)
-
-        while entity and entity['Actor'].has_energy:
-            if entity.has('IsPlayer'):
-                try:
-                    action = self.game.player.get_next_action()
-                    if action:
-                        action.act()
-                        return True
-                    continue
-                except IndexError:
-                    return False
-
-            entity.fire_event('take_action')
-            entity = entities.popleft()
-
-        return False
+#
+# class Reactor(BaseSystem):
+#
+#     def __init__(self, core: CoreLoop):
+#         super().__init__(core)
+#         self._query = self.core.engine.create_query(all_of=[ 'Actor' ])
+#
+#     def update(self):
+#         entities = self._query.result
+#         entities = deque(sorted(entities, key=lambda e: e['Actor']))
+#
+#         entity = entities.popleft()
+#
+#         if entity and not entity['Actor'].has_energy:
+#             self.game.clock.increment(-1 * entity['Actor'].energy)
+#             for entity in entities:
+#                 entity['Actor'].add_energy(self.game.clock.tick_delta)
+#
+#         while entity and entity['Actor'].has_energy:
+#             if entity.has('IsPlayer'):
+#                 try:
+#                     action = self.game.player.get_next_action()
+#                     if action:
+#                         action.act()
+#                         return True
+#                     continue
+#                 except IndexError:
+#                     return False
+#
+#             entity.fire_event('take_action')
+#             entity = entities.popleft()
+#
+#         return False

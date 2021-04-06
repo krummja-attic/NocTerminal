@@ -3,19 +3,17 @@ from nocterminal.ui import Screen
 from nocterminal.blt import Context
 from typing import *
 
-if TYPE_CHECKING:
-    from nocterminal.core_loop import CoreLoop
+from nocterminal.core_loop import CoreLoop
 
 
-class Director:
+class Director(CoreLoop):
 
-    def __init__(self, core: CoreLoop) -> None:
+    def __init__(self) -> None:
         super().__init__()
         self._stack: List[Screen] = []
         self._should_exit: bool = False
-
-        self.core: CoreLoop = core
         self.context: Context = Context()
+        self.terminal = self.context
 
     @property
     def active_screen(self) -> Optional[Screen]:
@@ -33,6 +31,7 @@ class Director:
         if self.active_screen:
             self.active_screen.resign_active()
         self._stack.append(screen)
+        screen.director = self
         screen.on_enter()
         screen.become_active()
 
@@ -51,21 +50,18 @@ class Director:
         while len(self._stack) > 1:
             self.pop_screen()
 
+    def get_initial_screen(self):
+        raise NotImplementedError()
+
+    def start(self):
+        self.replace_screen(self.get_initial_screen())
+        super().start()
+
     def quit(self):
         while self._stack:
             self.pop_screen(may_exit=True)
 
-    def update(self):
-        if self.context.has_input():
-            char = self.context.read()
-            self.terminal_read(char)
-        self.context.clear()
-        should_continue = self.terminal_update()
-        return should_continue
-
     def terminal_update(self):
-        self.core.engine_update()
-
         i = 0
         for j, screen in enumerate(self._stack):
             if screen.covers_screen:
