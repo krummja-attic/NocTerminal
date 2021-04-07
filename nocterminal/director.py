@@ -1,9 +1,12 @@
 from __future__ import annotations
 from nocterminal.ui import Screen
-from nocterminal.blt import Context
+from nocterminal.blt import context
 from typing import *
 
 from nocterminal.core_loop import CoreLoop
+
+if TYPE_CHECKING:
+    from nocterminal.blt.context import Context
 
 
 class Director(CoreLoop):
@@ -12,8 +15,7 @@ class Director(CoreLoop):
         super().__init__()
         self._stack: List[Screen] = []
         self._should_exit: bool = False
-        self.context: Context = Context()
-        self.terminal = self.context
+        self.context: Context = context
 
     @property
     def active_screen(self) -> Optional[Screen]:
@@ -60,6 +62,15 @@ class Director(CoreLoop):
     def quit(self):
         while self._stack:
             self.pop_screen(may_exit=True)
+
+    def update(self):
+        if self.context.has_input():
+            char = self.context.read()
+            self.terminal_read(char)
+
+        self.context.clear()
+        should_continue = self.terminal_update()
+        return should_continue
 
     def terminal_update(self):
         i = 0

@@ -16,7 +16,7 @@ class StartScreen(noc.ui.Screen):
             self.director.pop_screen(may_exit=True)
 
 
-class MainScreen(noc.ui.UIScreen):
+class MainScreen(noc.ui.Screen):
 
     def terminal_update(self, is_active=False):
         self.director.context.print(Point(1, 10), "MainScreen Test!")

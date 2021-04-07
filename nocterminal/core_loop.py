@@ -11,19 +11,16 @@ import nocterminal as noc
 
 class CoreLoop:
 
-    def __init__(self) -> None:
-        self.terminal = noc.terminal
-
     def start(self):
-        self.terminal.setup()
+        noc.terminal.setup()
         self.loop()
-        self.terminal.teardown()
+        noc.terminal.teardown()
 
-    def terminal_update(self) -> bool:
-        return True
-
-    def terminal_read(self, char):
+    def on_terminal_update(self):
         pass
+
+    def update(self):
+        return True
 
     def loop(self) -> None:
         # Update the active control context
@@ -31,16 +28,12 @@ class CoreLoop:
             iteration = False
             while self.loop_iteration():
                 iteration = True
-                self.terminal.refresh()
+                noc.terminal.refresh()
             if not iteration:
                 print("Exited after a single cycle.")
         except KeyboardInterrupt:
             pass
 
     def loop_iteration(self) -> bool:
-        key = self.terminal.read()
-        self.terminal_read(key)
-
-        should_continue = self.terminal_update()
-        # self.terminal.refresh()
+        should_continue = self.update()
         return should_continue

@@ -5,7 +5,7 @@ from .core_loop import CoreLoop
 
 from .blt import (
     BaseTerminal,
-    Context,
+    context,
     terminal_state,
     terminal
     )
@@ -16,7 +16,7 @@ import nocterminal.ui as ui
 __all__ = [
     'BaseTerminal',
     'Commander',
-    'Context',
+    'context',
     'CoreLoop',
     'Director',
     'Engine',
