@@ -15,6 +15,7 @@ class LabelView(View):
             align_vert='center',
             size=None,
             large=False,
+            clear=False,
             *args,
             **kwargs
         ) -> None:
@@ -25,10 +26,11 @@ class LabelView(View):
         self.color_fg = color_fg
         self.color_bg = color_bg
         self.large = large
+        self.clear = clear
         self._explicit_size = size
 
     @property
-    def intrinsic_size(self):
+    def intrinsic_size(self) -> Size:
         if self._explicit_size:
             return self._explicit_size
         height = 0
@@ -65,7 +67,7 @@ class LabelView(View):
             ctx.print_big(Point(x, y).floored, self.text)
         else:
             width = len(self.text)
-            ctx.clear_area(Rect(Point(x-1, y), Size(width+2, 1)).floored)
+            ctx.clear_area(Rect(Point(x, y), Size(width, 1)).floored)
             ctx.print(Point(x, y).floored, self.text)
 
     def debug_string(self):

@@ -1,11 +1,11 @@
 from __future__ import annotations
-from typing import List, Optional, TYPE_CHECKING
-
+from typing import *
 from morphism import Point, Rect, Size
 
 from .layout_options import LayoutOptions
 
 if TYPE_CHECKING:
+    from nocterminal.blt.context import Context
     from .screen import Screen
 
 
@@ -16,11 +16,12 @@ class View:
 
     def __init__(
             self, *,
-            clear: bool = False,
-            frame: Optional[Rect] = None,
-            layout: Optional[LayoutOptions] = None,
             screen: Optional[Screen] = None,
-            subviews: Optional[List[View]] = None
+            layout: Optional[LayoutOptions] = None,
+            subviews: Optional[List[View]] = None,
+            frame: Optional[Rect] = None,
+            clear: bool = False,
+            layer: int = 0
         ) -> None:
         self._frame: Rect = frame
         if frame is None:
@@ -29,8 +30,10 @@ class View:
         self._superview: Optional[View] = None
         self.needs_layout: bool = True
         self._bounds: Rect = self._frame.with_origin(Point(0, 0))
+        self._layer = layer
 
         self.clear: bool = clear
+        self.first_responder = None
         self.is_first_responder: bool = False
         self.is_hidden: bool = False
 
@@ -42,13 +45,11 @@ class View:
         if layout is None:
             self.layout_options = LayoutOptions()
 
-    def __str__(self):
+    def __str__(self) -> Callable[[], str]:
         return self.debug_string
 
-    def __repr__(self):
+    def __repr__(self) -> Callable[[], str]:
         return self.debug_string
-
-    # CORE API ########################
 
     @property
     def screen(self) -> Optional[Screen]:
@@ -65,125 +66,119 @@ class View:
             return None
 
     @superview.setter
-    def superview(self, value: View):
+    def superview(self, value: View) -> None:
         self._superview = value
 
-    def set_needs_layout(self, val=True):
-        self.needs_layout = val
+    def set_needs_layout(self, value: bool = True) -> None:
+        self.needs_layout = value
 
-    def add_subviews(self, subviews):
+    def add_subviews(self, subviews: List[View]) -> None:
         for v in subviews:
             v.superview = self
         self.subviews.extend(subviews)
 
-    def remove_subviews(self, subviews):
+    def remove_subviews(self, subviews: List[View]) -> None:
         for v in subviews:
             v.superview = None
         self.subviews = [v for v in self.subviews if v not in subviews]
 
-    def add_subview(self, subview):
+    def add_subview(self, subview: View) -> None:
         self.add_subviews([subview])
 
-    def remove_subview(self, subview):
+    def remove_subview(self, subview: View) -> None:
         self.remove_subviews([subview])
 
-    def perform_draw(self, ctx):
+    def perform_draw(self, ctx: Context) -> None:
         if self.is_hidden:
             return
+        ctx.layer(self._layer)
         self.draw(ctx)
         for view in self.subviews:
             with ctx.translate(view.frame.origin):
                 view.perform_draw(ctx)
 
-    def draw(self, ctx):
+    def draw(self, ctx: Context):
         if self.clear:
             ctx.clear_area(self.bounds)
 
-    def perform_layout(self):
+    def perform_layout(self) -> None:
         if self.needs_layout:
             self.layout_subviews()
             self.needs_layout = False
         for view in self.subviews:
             view.perform_layout()
 
-    def layout_subviews(self):
+    def layout_subviews(self) -> None:
         for view in self.subviews:
             view.apply_springs_and_struts_layout_in_superview()
 
-    # bounds, frame ###
+    @property
+    def intrinsic_size(self) -> Optional[Size]:
+        return None
 
     @property
-    def intrinsic_size(self):
-        raise NotImplementedError()
-
-    @property
-    def frame(self):
+    def frame(self) -> Rect:
         return self._frame
 
     @frame.setter
-    def frame(self, new_value):
-        if new_value == self._frame:
+    def frame(self, value: Rect) -> None:
+        if value == self._frame:
             return
-        self._frame = new_value
-        self._bounds = new_value.with_origin(Point(0, 0))
+        self._frame = value
+        self._bounds = value.with_origin(Point(0, 0))
         self.set_needs_layout(True)
 
     @property
-    def bounds(self):
+    def bounds(self) -> Rect:
         return self._bounds
 
     @bounds.setter
-    def bounds(self, new_value):
-        if new_value.origin != Point(0, 0):
+    def bounds(self, value: Rect) -> None:
+        if value.origin != Point(0, 0):
             raise ValueError("Bounds is always anchored at (0, 0)")
-        if new_value == self._bounds:
+        if value == self._bounds:
             return
-        self._bounds = new_value
-        self._frame = self._frame.with_size(new_value.size)
+        self._bounds = value
+        self._frame = self._frame.with_size(value.size)
         self.set_needs_layout(True)
 
-    # responder chain, input ###
-
     @property
-    def can_become_first_responder(self):
+    def can_become_first_responder(self) -> bool:
         return False
 
     @property
-    def contains_first_responders(self):
+    def contains_first_responders(self) -> bool:
         return False
 
     @property
-    def can_resign_first_responder(self):
+    def can_resign_first_responder(self) -> bool:
         return True
 
     @property
-    def first_responder_container_view(self):
-        # FIXME pretty hacky way to check for this but whatever
-        if hasattr(self, 'first_responder'):
+    def first_responder_container_view(self) -> Optional[View]:
+        if self.first_responder:
             return self
         for v in self.ancestors:
-            if hasattr(v, 'first_responder'):
+            if v.first_responder:
                 return v
         return None
 
-    def did_become_first_responder(self):
+    def did_become_first_responder(self) -> None:
         self.set_needs_layout(True)
         self.is_first_responder = True
 
-    def did_resign_first_responder(self):
+    def did_resign_first_responder(self) -> None:
         self.set_needs_layout(True)
         self.is_first_responder = False
 
-    def descendant_did_become_first_responder(self, view):
+    def descendant_did_become_first_responder(self, view: View) -> bool:
         pass
 
-    def descendant_did_resign_first_responder(self, view):
+    def descendant_did_resign_first_responder(self, view: View) -> bool:
         pass
 
-    def terminal_read(self, val):
+    def terminal_read(self, char: int) -> bool:
         return False
-
-    # tree traversal ###
 
     @property
     def leftmost_leaf(self):
@@ -212,8 +207,6 @@ class View:
             if predicate(v):
                 return v
         return None
-
-    # apply layout ###
 
     def apply_springs_and_struts_layout_in_superview(self):
         options = self.layout_options
@@ -295,8 +288,6 @@ class View:
         assert(final_frame.width != -1000)
         assert(final_frame.height != -1000)
         self.frame = final_frame.floored
-
-    # debug ###
 
     def debug_string(self) -> str:
         return str('{} {!r}'.format(type(self).__name__, self.frame))

@@ -5,7 +5,7 @@ from math import floor
 from bearlibterminal import terminal
 from morphism import Rect, Point, Size
 
-from nocterminal.blt import blt_state
+from nocterminal.blt import terminal_state
 from .rect_view import RectView
 from .label_view import LabelView
 from .first_responder import FirstResponderContainerView
@@ -135,14 +135,14 @@ class SettingsListView(FirstResponderContainerView):
         # pageup/<
         elif (val == terminal.TK_PAGEUP
               or val == terminal.TK_COMMA
-              and blt_state.shift):
+              and terminal_state.shift):
             self.min_row = max(0, self.min_row - self.inner_height)
             self.set_first_responder_in_visible_area()
             return True
         # pagedown/>
         elif (val == terminal.TK_PAGEDOWN
               or val == terminal.TK_PERIOD
-              and blt_state.shift):
+              and terminal_state.shift):
             self.min_row = min(
                 len(self.labels) - self.inner_height - 1,
                 self.min_row + self.inner_height)
@@ -164,9 +164,8 @@ class KeyAssignedListView(SettingsListView):
             label_control_pairs.append((next(symbols, " "), value_control))
 
         super().__init__(label_control_pairs,
-                         value_column_width=16,
-                         *args,
-                         **kwargs)
+                         value_column_width=value_column_width,
+                         *args, **kwargs)
 
     def terminal_read(self, val):
         super().terminal_read(val)

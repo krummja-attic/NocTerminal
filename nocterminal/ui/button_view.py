@@ -16,6 +16,7 @@ class ButtonView(View):
             color_fg=0xFFFFFFFF,
             color_bg=0xFF151515,
             size=None,
+            clear=False,
             *args, **kwargs
             ) -> None:
         self.label_view = LabelView(
@@ -24,10 +25,10 @@ class ButtonView(View):
             align_vert=align_vert,
             size=size,
             color_fg=color_fg,
-            color_bg=color_bg
+            color_bg=color_bg,
+            clear=clear
             )
         super().__init__(subviews=[self.label_view], *args, **kwargs)
-
         self.color_fg = color_fg
         self.color_bg = color_bg
         self.callback = callback
@@ -46,7 +47,8 @@ class ButtonView(View):
 
     def draw(self, ctx):
         if self.clear:
-            ctx.bkcolor(self.color_bg)
+            ctx.bkcolor = self.color_bg
+            ctx.color = self.color_fg
             ctx.clear_area(self.bounds)
 
     @property
@@ -73,3 +75,17 @@ class ButtonView(View):
         if val == terminal.TK_ENTER:
             self.callback()
             return True
+
+
+class CyclingButtonView(ButtonView):
+
+    def __init__(self, options, initial_value, callback, *args, **kwargs) -> None:
+        self.options = options
+        self._inner_callback = callback
+        super().__init__(initial_value, self._call_inner_callback, *args, **kwargs)
+
+    def _call_inner_callback(self):
+        i = self.options.index(self.text)
+        new_value = self.options[(i + 1) % len(self.options)]
+        self.text = new_value
+        self._inner_callback(new_value)

@@ -85,7 +85,7 @@ class Context:
         return terminal.refresh()
 
     @staticmethod
-    def setup(composition=True, bkcolor=0xFF151515) -> None:
+    def setup(composition: bool = True, bkcolor: int = 0xFF151515) -> None:
         return terminal.setup(composition=composition, bkcolor=bkcolor)
 
     @staticmethod
@@ -110,8 +110,8 @@ class Context:
         return terminal.layer(value)
 
     @staticmethod
-    def clear(bkcolor=0xFF151515) -> None:
-        return terminal.clear(bkcolor)
+    def clear(color=0xFFFFFFFF, bkcolor=0xFF151515) -> None:
+        return terminal.clear(color, bkcolor)
 
     @staticmethod
     def read():

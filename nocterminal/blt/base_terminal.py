@@ -8,7 +8,8 @@ class BaseTerminal:
     def __getattr__(self, k):
         return getattr(_terminal, k)
 
-    def setup(self, composition: bool = True, bkcolor: int = 0xFF151515) -> None:
+    @staticmethod
+    def setup(composition: bool = True, bkcolor: int = 0xFF151515) -> None:
         _terminal.open()
         _terminal.composition(composition)
         _terminal.bkcolor(bkcolor)
@@ -23,9 +24,10 @@ class BaseTerminal:
         _terminal.refresh()
 
     @staticmethod
-    def clear(bkcolor: int = 0xFF151515):
+    def clear(color: int = 0xFFFFFFFF, bkcolor: int = 0xFF151515):
         _terminal.clear()
         _terminal.bkcolor(bkcolor)
+        _terminal.color(color)
 
     @staticmethod
     def has_input():
@@ -45,8 +47,8 @@ class BaseTerminal:
         if args and isinstance(args[0], Rect):
             rect: Rect = args[0]
             return _terminal.clear_area(
-                rect.origin.x, rect.origin.y,
-                rect.size.width, rect.size.height
+                int(rect.origin.x), int(rect.origin.y),
+                int(rect.size.width), int(rect.size.height)
                 )
         return _terminal.clear_area(*args)
 
@@ -64,9 +66,6 @@ class BaseTerminal:
     @staticmethod
     def puts(*args):
         if args and isinstance(args[0], Point):
-            # if args[2] and isinstance(args[2], Size):
-            #     return _terminal.puts(args[0].x, args[0].y, args[1],
-            #                          args[2].width, args[2].height, *args[3:])
             return _terminal.puts(args[0].x, args[0].y, *args[1:])
         else:
             return _terminal.puts(*args)
@@ -129,4 +128,3 @@ class BaseTerminal:
 
 
 terminal = BaseTerminal()
-

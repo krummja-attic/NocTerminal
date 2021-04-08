@@ -62,17 +62,15 @@ class UIScreen(Screen):
     def terminal_read(self, val):
         super().terminal_read(val)
 
-    def on_terminal_update(self):
-        pass
-
     # noinspection PyUnresolvedReferences
     def terminal_update(self, is_active=False):
-        self.on_terminal_update()
-
         ctx = self._director.context
         ctx.bkcolor = 0xFF151515
+        ctx.color = 0xFFFFFFFF
         self.view.frame = self.view.frame.with_size(
             Size(terminal_state.width, terminal_state.height))
         self.view.perform_layout()
         self.view.perform_draw(ctx)
         ctx.bkcolor = 0xFF151515
+        ctx.color = 0xFFFFFFFF
+        return True

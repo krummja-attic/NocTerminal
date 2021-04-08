@@ -11,10 +11,11 @@ if TYPE_CHECKING:
 
 class Director(CoreLoop):
 
-    def __init__(self) -> None:
+    def __init__(self, client=None) -> None:
         super().__init__()
         self._stack: List[Screen] = []
         self._should_exit: bool = False
+        self.client = client
         self.context: Context = context
 
     @property
@@ -63,26 +64,27 @@ class Director(CoreLoop):
         while self._stack:
             self.pop_screen(may_exit=True)
 
-    def update(self):
+    def update(self, dt):
         if self.context.has_input():
             char = self.context.read()
             self.terminal_read(char)
 
-        self.context.clear()
+        # self.context.clear()
         should_continue = self.terminal_update()
         return should_continue
+
+    def loop_iteration_hook(self):
+        self.context.update()
+
+    def terminal_read(self, char):
+        if self._stack:
+            return self.active_screen.terminal_read(char)
 
     def terminal_update(self):
         i = 0
         for j, screen in enumerate(self._stack):
             if screen.covers_screen:
                 i = j
-
         for screen in self._stack[i:]:
             screen.terminal_update(screen == self._stack[-1])
-
         return not self._should_exit
-
-    def terminal_read(self, char):
-        if self._stack:
-            return self.active_screen.terminal_read(char)
