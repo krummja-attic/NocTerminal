@@ -1,4 +1,6 @@
 from __future__ import annotations
+import time
+import nocterminal as noc
 from nocterminal.ui import Screen
 from nocterminal.blt import context
 from typing import *
@@ -14,7 +16,7 @@ class Director(CoreLoop):
     def __init__(self, client=None) -> None:
         super().__init__()
         self._stack: List[Screen] = []
-        self._should_exit: bool = False
+        self._should_continue: bool = True
         self.client = client
         self.context: Context = context
 
@@ -47,7 +49,7 @@ class Director(CoreLoop):
         if self.active_screen:
             self.active_screen.become_active()
         elif may_exit:
-            self._should_exit = True
+            self._should_continue = False
 
     def pop_to_first_screen(self):
         while len(self._stack) > 1:
@@ -56,35 +58,41 @@ class Director(CoreLoop):
     def get_initial_screen(self):
         raise NotImplementedError()
 
-    def start(self):
-        self.replace_screen(self.get_initial_screen())
-        super().start()
-
     def quit(self):
         while self._stack:
             self.pop_screen(may_exit=True)
 
-    def update(self, dt):
+    def start(self):
+        self.replace_screen(self.get_initial_screen())
+        noc.terminal.setup()
+        self.main_loop()
+        noc.terminal.teardown()
+
+    def main_loop(self) -> None:
+        try:
+            iteration = False
+            while self.loop_iteration():
+                iteration = True
+            if not iteration:
+                print("Exited after a single cycle.")
+        except KeyboardInterrupt:
+            pass
+
+    def loop_iteration(self) -> bool:
         if self.context.has_input():
             char = self.context.read()
             self.terminal_read(char)
 
-        # self.context.clear()
-        should_continue = self.terminal_update()
-        return should_continue
-
-    def loop_iteration_hook(self):
-        self.context.update()
-
-    def terminal_read(self, char):
-        if self._stack:
-            return self.active_screen.terminal_read(char)
-
-    def terminal_update(self):
         i = 0
         for j, screen in enumerate(self._stack):
             if screen.covers_screen:
                 i = j
         for screen in self._stack[i:]:
             screen.terminal_update(screen == self._stack[-1])
-        return not self._should_exit
+
+        self.context.refresh()
+        return self._should_continue
+
+    def terminal_read(self, char):
+        if self._stack:
+            self.active_screen.terminal_read(char)

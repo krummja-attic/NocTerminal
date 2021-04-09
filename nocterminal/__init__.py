@@ -1,4 +1,3 @@
-from .commander import Commander
 from .director import Director
 from .engine import Engine
 from .core_loop import CoreLoop
@@ -15,7 +14,6 @@ import nocterminal.ui as ui
 
 __all__ = [
     'BaseTerminal',
-    'Commander',
     'context',
     'CoreLoop',
     'Director',

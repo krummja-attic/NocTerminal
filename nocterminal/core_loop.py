@@ -15,39 +15,39 @@ class CoreLoop:
     def __init__(self):
         self._last_update: float = 0.0
 
-    def start(self):
-        noc.terminal.setup()
-        self.main_loop()
-        noc.terminal.teardown()
+    # def start(self):
+    #     noc.terminal.setup()
+    #     self.main_loop()
+    #     noc.terminal.teardown()
 
-    def main_loop(self) -> None:
-        # Update the active control context
-        try:
-            iteration = False
-            while self.loop_iteration():
-                iteration = True
-                noc.terminal.refresh()
-            if not iteration:
-                print("Exited after a single cycle.")
-        except KeyboardInterrupt:
-            pass
-
-    def loop_iteration_hook(self):
-        pass
-
-    def loop_iteration(self) -> bool:
-        now = time.time()
-        dt = now - self._last_update
-        should_continue = self.update(dt)
-        self.loop_iteration_hook()
-        self._last_update = now
-        return should_continue
-
-    def update(self, dt):
-        return True
-
-    def terminal_read(self, char):
-        pass
-
-    def terminal_update(self):
-        pass
+    # def main_loop(self) -> None:
+    #     # Update the active control context
+    #     try:
+    #         iteration = False
+    #         while self.loop_iteration():
+    #             iteration = True
+    #             # noc.terminal.refresh()
+    #         if not iteration:
+    #             print("Exited after a single cycle.")
+    #     except KeyboardInterrupt:
+    #         pass
+    #
+    # def loop_iteration_hook(self):
+    #     pass
+    #
+    # def loop_iteration(self) -> bool:
+    #     now = time.time()
+    #     dt = now - self._last_update
+    #     should_continue = self.update(dt)
+    #     self.loop_iteration_hook()
+    #     self._last_update = now
+    #     return should_continue
+    #
+    # def update(self, dt):
+    #     return True
+    #
+    # def terminal_read(self, char):
+    #     pass
+    #
+    # def terminal_update(self):
+    #     pass

@@ -59,10 +59,6 @@ class UIScreen(Screen):
         self.view = FirstResponderContainerView(subviews=views, screen=self)
         self.add_terminal_reader(self.view)
 
-    def terminal_read(self, val):
-        super().terminal_read(val)
-
-    # noinspection PyUnresolvedReferences
     def terminal_update(self, is_active=False):
         ctx = self._director.context
         ctx.bkcolor = 0xFF151515

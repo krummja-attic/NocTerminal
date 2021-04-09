@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from collections import deque
 from contextlib import contextmanager
-from nocterminal.blt.base_terminal import terminal
+from nocterminal.blt.base_terminal import terminal, BaseTerminal
 from nocterminal.blt.state import terminal_state
 from morphism import *
 
@@ -31,7 +31,7 @@ LINE_STYLES = {
     }
 
 
-class Context:
+class Context(BaseTerminal):
 
     def __init__(self):
         self._offset = Point(0, 0)
@@ -91,19 +91,6 @@ class Context:
     @staticmethod
     def teardown() -> None:
         return terminal.teardown()
-
-    def push_to_stack(self, func):
-        self._render_stack.append(func)
-
-    def clear_stack(self):
-        self._render_stack.clear()
-
-    def update(self) -> None:
-        while len(self._render_stack) > 0:
-            draw = self._render_stack.popleft()
-            draw(0)
-        self.clear_stack()
-        self.refresh()
 
     @staticmethod
     def layer(value: int):
